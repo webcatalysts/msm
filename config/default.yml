@@ -1,0 +1,35 @@
+EditingEnabled: true
+MetaEditingEnabled: true
+DefaultCollectionNames:
+  collections: 'msm_collections'
+  databases: 'msm_databases'
+  processes: 'msm_processes'
+  tests: 'msm_tests'
+  settings: 'msm_settings'
+Servers: 
+  default: 
+    name: localhost
+    uri: mongodb://localhost:27017/msm
+    options:
+      bufferCommands: true
+      bufferMaxEntries: 0
+      autoIndex: true
+      autoReconnect: true
+      reconnectTries: true
+      poolSize: 10 
+      user: null
+      pass: null
+    client:
+      host: 0.0.0.0
+      port: 3000
+Api:
+  enabled: true
+  basePath: /api
+Admin:
+  allowInProduction: false
+  basePath: /msm
+  enabled: true
+caching:
+  enabled: false
+  uri: null
+  options: null
