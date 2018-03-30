@@ -20,7 +20,6 @@ MongoSchemaManager.prototype.boot = async function () {
 
 MongoSchemaManager.prototype.init = async function (data) {
   var servers = this.config.get('Servers');
-  console.log(this.currentServer.uri);
   this.mongoose = await this.kernel.mongoose.createConnection(this.currentServer.uri, this.currentServer.options);
   this.models = require('./models')(this.mongoose, this);
   this.app.use(function (req, res, next) {
@@ -30,10 +29,18 @@ MongoSchemaManager.prototype.init = async function (data) {
   process.on('unhandledRejection', function(reason, p) {
     console.log("Unhandled Rejection:", reason.stack);
   });
+
+  this.settings = await this.models.Setting.loadAll();
+  if (this.settings.evaloninit) {
+    await this.eval(this.settings.evaloninit);
+  }
   await this.triggerEvent('init');
 }
 
 MongoSchemaManager.prototype.ready = async function (data) {
+  if (this.settings.evalonready) {
+    await this.eval(this.settings.evalonready);
+  }
   await this.triggerEvent('ready');
 }
 
@@ -41,16 +48,15 @@ MongoSchemaManager.prototype.run = async function (key) {
   this.currentServer = this.config.get('Servers.' + key);
   this.currentServerKey = key;
   this.app = this.kernel.express();
-  this.server = this.kernel.http.Server(this.app);
-  this.server.on('listening', this.ready.bind(this));
   this.io = this.kernel.io(this.server);
   await this.init();
+  this.server = this.kernel.http.Server(this.app);
   this.server.listen(this.currentServer.client.port, this.currentServer.client.host);
+  this.server.on('listening', this.ready.bind(this));
 }
 
 MongoSchemaManager.prototype.triggerEvent = async function (ev) {
   console.log('Event: %s', ev);
-  console.log(ev);
   return this.emit(ev, Array.prototype.slice.call(arguments, 1));
 }
 
@@ -58,4 +64,9 @@ MongoSchemaManager.prototype.isProduction = function () {
   return false;
 }
 
+MongoSchemaManager.prototype.eval = async function (code) {
+  let msm = this;
+  eval('var evalThisNow = async function () { ' + code + '};');
+  await evalThisNow();
+}
 module.exports = MongoSchemaManager;

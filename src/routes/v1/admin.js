@@ -23,9 +23,16 @@ router.delete('/databsae/:id', databasesAdmin.delete);
 router.put('/collection/:id', collectionsAdmin.create);
 router.post('/collection/:id/create', collectionsAdmin.create);
 router.post('/collection/:id', collectionsAdmin.update);
+router.post('/collection/:id/process', collectionsAdmin.saveAndProcess);
+router.post('/collection/:id/analyze', collectionsAdmin.analyze);
 router.delete('/collection/:id', collectionsAdmin.delete);
-router.put('/collection/:id/schema', collectionsAdmin.overwriteSchema);
-router.post('/collection/:id/schema', collectionsAdmin.mergeSchema);
+//router.put('/collection/:id/schema', collectionsAdmin.overwriteSchema);
+router.post('/collection/:id/schema', collectionsAdmin.overwriteSchema);
 router.get('/collection/:id/dependents', collectionsAdmin.getDependencies);
 
 router.get('/tests', collectionsAdmin.loadTests);
+router.get('/tests/run', collectionsAdmin.runTests);
+router.get('/collection/:id/test', collectionsAdmin.loadTest);
+router.put('/collection/:id/test', collectionsAdmin.saveTest);
+router.post('/collection/:id/test', collectionsAdmin.saveTest);
+router.get('/collection/:id/test/run', collectionsAdmin.runTest);

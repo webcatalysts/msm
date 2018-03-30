@@ -35,7 +35,7 @@ MongoDBCache.prototype.setHandler = function (key, val, ttl) {
                     db.collection($this.collectionName).updateOne(
                         {_id: key},
                         { '$set': {
-                            v: new Buffer(JSON.stringify(val), 'binary'),
+                            v: JSON.stringify(val),
                             l: lifetime,
                         }},
                         { upsert: true },

@@ -22,12 +22,17 @@ var controller = module.exports = {
     });
   },
   update: function (req, res) {
-    console.log(req.body);
     req.mongoSchemaManager.models.Collection.update({_id: req.params.id}, req.body, function (err, result) {
-      console.log('updated');
       if (err) res.json({ok: 0, error: err.message});
       else res.json(result);
     });
+  },
+  saveAndProcess: async function (req, res) {
+    await req.mongoSchemaManager.models.Collection.update({_id: req.params.id}, req.body);
+    var CollectionProcess = require('../collection-process');
+    var collectionProcess = new CollectionProcess(req.params.id, req.mongoSchemaManager);
+    collectionProcess.run({analyzeSchema: true});
+    res.send({ok: 1});
   },
   delete: function (req, res) {
     req.mongoSchemaManager.models.Collection.findById(req.params.id, {dependencies: 1}, function (err, collection) {
@@ -38,9 +43,16 @@ var controller = module.exports = {
     });
 
   },
-  analyze: function (req, res) {
+  analyze: async function (req, res) {
+    var collection = await req.mongoSchemaManager.models.Collection.findById(req.params.id); 
+    var options = req.body || {};
+    collection.analyze(options);
   },
   overwriteSchema: function (req, res) {
+    req.mongoSchemaManager.models.Collection.update({_id: req.params.id}, {'$set': { schemaFields: req.body }}, function (err, result) {
+      if (err) res.json(500, {ok: 0, error: err.message});
+      else res.json(result);
+    });
   },
   mergeSchema: function (req, res) {
   },
@@ -58,7 +70,7 @@ var controller = module.exports = {
           if (ucol.source) {
             col.dependencies.push(ucol.source);
           }
-          if (ucol.dependencies.length) {
+          if (ucol.dependencies && ucol.dependencies.length) {
             col.dependencies = ucol.dependencies;
           }
           cols[ucol._id] = col;
@@ -77,16 +89,45 @@ var controller = module.exports = {
     });
   },
   loadTests: function (req, res) {
-    req.mongoSchemaManager.models.CollectionTest.find(function (err, results) {
-      res.json(results);
+    req.mongoSchemaManager.models.CollectionTest.find(function (err, docs) {
+      res.json(docs);
     });
   },
-  runTests: function (req, res) {
+  runTests: async function (req, res) {
+    var query = req.query ? req.query : {};
+    req.enabled = true;
+    var testDocs = await req.mongoSchemaManager.models.CollectionTest.find(query);
+    var num = testDocs.length;
+    res.send({ok:1});
+    console.log('There are %d tests to run..', num);
+    for (var i = 0; i < num; i++) {
+      var testDoc = testDocs[i];
+      testDoc.runTest(req.msm, true);
+    }
   },
-  loadTest: function (req, res) {
+  loadTest: async function (req, res) {
+    var testDoc = await req.mongoSchemaManager.models.CollectionTest.findById(req.params.id);
+    res.json(testDoc);
   },
-  createTest: function (req, res) {
+  saveTest: async function (req, res) {
+    try {
+      var result = await req.mongoSchemaManager.models.CollectionTest.update({_id: req.params.id}, req.body, {upsert: true});
+      res.json(result);
+      return;
+    }
+    catch (err) {
+      res.status(404).json({ok: 0, error: err.message});
+    }
   },
-  updateTest: function (req, res) {
-  },
+  runTest: async function (req, res) {
+    try {
+      var testDoc = await req.mongoSchemaManager.models.CollectionTest.findById(req.params.id);
+      var result = await testDoc.runTest();
+      res.json({ok: 1, result: result});
+    }
+    catch (err) {
+      res.json({ok: 0, error: err.message});
+      return;
+    }
+  }
 }

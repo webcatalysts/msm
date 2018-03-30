@@ -13,9 +13,6 @@ var controller = module.exports = {
     });
   },
   schema: function (req, res) {
-    res.setHeader('Access-Control-Allow-Origin', 'http://msm.dd:8083');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     req.mongoSchemaManager.models.Collection.findOne({ _id: req.params.id }, { schemaFields: 1 }, function (err, collection) {
       if (err) {
         res.status(500).send(err.message);
@@ -39,10 +36,10 @@ var controller = module.exports = {
   analyze: function (req, res) {
   },
   process: function (req, res) {
-    res.send({ok: 1});
     var CollectionProcess = require('../collection-process');
     var collectionProcess = new CollectionProcess(req.params.id, req.mongoSchemaManager);
     collectionProcess.run({analyzeSchema: true});
+    res.send({ok: 1});
   },
   list: function (req, res) {
     req.mongoSchemaManager.models.Collection.list(req.query, function (err, docs) {
@@ -50,9 +47,6 @@ var controller = module.exports = {
     });
   },
   query: function (req, res) {
-    res.setHeader('Access-Control-Allow-Origin', 'http://msm.dd:8083');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     req.mongoSchemaManager.models.Collection.findOne({ _id: req.params.id }, function (err, collection) {
       var params = {};
       collection.query(params, function (err, results) {

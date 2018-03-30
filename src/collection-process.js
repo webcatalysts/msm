@@ -171,7 +171,8 @@ CollectionProcess.prototype.run = async function (options = {}) {
     var destinationCollection = destinationDatabase.collection(destinationCollectionName);
 
     if (instance.collection.dependencies && instance.collection.dependencies.length) {
-        let deps = await instance.collectionProvider.find({_id: { "$in": instance.collection.dependencies }});
+      console.log(instance.collection.dependencies);
+        let deps = await msm.models.Collection.find({_id: { "$in": instance.collection.dependencies }});
         var numD = deps.length;
         var dependencies = {};
         for (var d = 0; d < numD; d++) {
@@ -193,7 +194,7 @@ CollectionProcess.prototype.run = async function (options = {}) {
     var callback = async function (err, res) {
         if (err) {
             console.log('Failed to process %s: %s', instance.collection._id, err);
-            con.close();
+            //con.close();
         }
         else {
             if (options.analyzeSchema && !instance.collection.schemaCustomized) {
@@ -207,10 +208,11 @@ CollectionProcess.prototype.run = async function (options = {}) {
             }
             instance.collection.lastProcessed = new Date;
             instance.collection.timesProcessed++;
-            instance.collection.millisProcessed += Date.now() - startMillis;
+            instance.collection.millisProcessed += 1*(Date.now() - startMillis);
+            console.log(instance.collection.millisProcessed);
             await instance.collection.save();
             console.log('Successfully processed collection: ', instance.collection._id);
-            con.close();
+            //con.close();
         }
     }
     switch (instance.collection.type) {

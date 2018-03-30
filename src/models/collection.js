@@ -61,6 +61,10 @@ var CollectionSchemaFactory = function (mongoose, msm) {
     },
     millisProcessed: {
       type: Number,
+      default: 0,
+    },
+    description: {
+      type: String,
     },
   }, { collection: 'msm_collections' });
 
@@ -200,6 +204,28 @@ var CollectionSchemaFactory = function (mongoose, msm) {
     }
 		this.schemaFields = schemaResult;
 		return this.save();
+  }
+  CollectionSchema.methods.updateCollectionOptions = async function (options = {}) {
+    var optionKeysIn = Object.keys(options);
+    var numOptionsIn = optionKeysIn.length;
+    if (!numOptionsIn) return;
+    var validOptions = ['index', 'noPadding', 'usePowerOf2Sizes', 'validator', 'validationLevel', 'validationAction'];
+    var validViewOptions = ['viewOn', 'pipeline'];
+    var setOptions = {};
+    // Validate the options (at least partially)
+    optionKeysIn.forEach(function (optionKey) {
+        if (validOptions.indexOf(optionKey) >= 0 || (!this.persist && validViewOptions.indexOf(optionKey) >= 0)) {
+            setOptions[optionKey] =  options[optionKey];
+        }
+        else throw new Error('Invalid collection option: ' + optionKey);
+    }.bind(this));
+    if (typeof setOptions['pipeline'] !== 'undefined') {
+        setOptions['pipeline'] = JSON.stringify(setOptions['pipeline']);
+    }
+    var db = this.db.client.db(this.databaseName);
+    var result = await db.command(Object.assign({ collMod: this.collectionName}, options));
+    this.collectionOptions = setOptions;
+    await this.save();
   }
 
   //CollectionSchema.plugin(require('mongoose-diff-history/diffHistory').plugin);
