@@ -175,6 +175,7 @@ var CollectionSchemaFactory = function (mongoose, msm) {
 	CollectionSchema.methods.analyze = async function (options = {}) {
     var schema = require('../schema-utils');
     options = Object.assign({}, { merge: true }, options);
+    if (options.limit) options.limit = 1*options.limit;
 		var con = this.db.client;
     if (!this.persist) {
         var db = con.db(this.databaseName);

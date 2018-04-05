@@ -1,7 +1,6 @@
 
 var controller = module.exports = {
   find: function (req, res) {
-    console.log(req.params.id);
     req.mongoSchemaManager.models.Collection.findOne({ _id: req.params.id }, function (err, collection) {
       if (err) {
         res.status(500).send(err.message);
@@ -48,7 +47,14 @@ var controller = module.exports = {
   },
   query: function (req, res) {
     req.mongoSchemaManager.models.Collection.findOne({ _id: req.params.id }, function (err, collection) {
-      var params = {};
+      var params = {
+        query: req.query.query || {},
+        project: req.query.project || false,
+        skip: req.query.skip || false,
+        limit: req.query.limit || false,
+        batchSize: req.query.batchSize || false,
+        sort: req.query.sort || false
+      };
       collection.query(params, function (err, results) {
         if (err) res.status(500).send(err.message);
         else res.json(results);
