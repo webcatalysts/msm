@@ -50,7 +50,6 @@ CollectionProcess.prototype.startRun = async function () {
         console.log('Operation timed out..');
         return;
     }
-    (await this.collectionProvider.getCollection()).col.ensureIndex({enabled: 1});
     this.items = await this.msm.models.Collection.find({
         enabled: { '$ne': false },
     }, { _id: 1, dependencies: 1, source: 1 });
@@ -62,13 +61,14 @@ CollectionProcess.prototype.startRun = async function () {
     }
     for (var i = 0; i < numI; i++) {
         var item = this.items[i];
-        if (typeof item.dependencies === 'undefined') {
+        if (item.dependencies === null || typeof item.dependencies === 'undefined') {
             item.dependencies = [];
         }
         if (item.source) {
             //item.dependencies.unshift(item.source);
             item.dependencies.push(item.source);
         }
+        console.log(item);
         item.totalDependencies = item.dependencies.length;
         for (var d = 0; d < item.totalDependencies; d++) {
             var dep = item.dependencies[d];
@@ -114,6 +114,7 @@ CollectionProcess.prototype.startRun = async function () {
 }
 
 CollectionProcess.prototype.checkProcess = async function () {
+    return 0;
     return await this.storageCollection.count();
 }
 

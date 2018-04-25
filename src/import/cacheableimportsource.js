@@ -26,7 +26,6 @@ class CacheableImportSource extends ImportSource {
             let cacheResult = await this.cache.get(cacheKey);
             if (cacheResult) {
                 console.log('Cache: HIT ' + cacheKey);
-                console.log(cacheResult);
                 return cacheResult;
             }
             console.log('Cache: MISS');

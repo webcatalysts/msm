@@ -66,6 +66,18 @@ var CollectionSchemaFactory = function (mongoose, msm) {
     description: {
       type: String,
     },
+    preProcess: {
+      type: String,
+    },
+    postProcess: {
+      type: String,
+    },
+    preExecute: {
+      type: String,
+    },
+    postExecute: {
+      type: String,
+    },
   }, { collection: 'msm_collections' });
 
   CollectionSchema.statics.create = function (id, values, callback) {

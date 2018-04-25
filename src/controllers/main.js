@@ -23,7 +23,11 @@ var controller = module.exports = {
   },
   databaseFind: function (req, res) {
   },
-  process: function (req, res) {
+  process: async function (req, res) {
+    var CollectionProcess = require('../collection-process');
+    let collectionProcess = new CollectionProcess(null, req.mongoSchemaManager);
+    collectionProcess.runAll();
+    res.send({ok: 1});
   },
   settings: async function (req, res) {
     var results = await req.mongoSchemaManager.models.Setting.loadAll();

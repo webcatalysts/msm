@@ -37,7 +37,6 @@ var DatabaseSchemaFactory = function (msm) {
 			var numDocuments = documents.length;
 			for (var i = 0; i < numDocuments; i++) {
 				var doc = documents[i];
-        console.log(doc._id);
 				if (!keyedExisting[doc._id]) {
 					results.push({
             name: doc.id,
